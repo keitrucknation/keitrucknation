@@ -53,3 +53,10 @@ Still being built. Planned next:
 - Supabase: database for inventory, parts, blog, orders and form submissions; auth; admin dashboard
 - Deploy on Vercel
 - Before launch: review the reviews/testimonials/dealers content and the checkout payment flow
+
+## Acknowledgments
+
+- Powered by Next.js and React
+- Styled with Tailwind CSS
+
+Built with ❤️
