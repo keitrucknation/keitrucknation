@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { INVENTORY } from '@/lib/inventory';
 import { TRUCK_CATEGORIES } from './inventory/data/categories';
+import { articles } from './blog/data/articles';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -114,5 +115,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.75,
   }));
 
-  return [...staticPages, ...truckPages, ...categoryPages];
+  // Every blog article, generated from the same data the blog uses.
+  const blogPages: MetadataRoute.Sitemap = articles.map((a) => ({
+    url: `${baseUrl}/blog/${a.slug}`,
+    lastModified: a.isoDate ? new Date(a.isoDate) : new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.7,
+  }));
+
+  return [...staticPages, ...truckPages, ...categoryPages, ...blogPages];
 }

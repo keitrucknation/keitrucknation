@@ -7,6 +7,15 @@ import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 
 type IconVariant = 'outline' | 'solid';
 
+/** Heroicon name -> downloaded PNG in /public/assets/icons */
+const CUSTOM_PNG: Record<string, string> = {
+  MapPinIcon: 'location-pin.png',
+  PhoneIcon: 'phone-contact.png',
+  TruckIcon: 'truck-body.png',
+  WrenchScrewdriverIcon: 'accessories.png',
+  CurrencyDollarIcon: 'financing.png',
+};
+
 interface IconProps {
   name: string; // Changed to string to accept dynamic values
   variant?: IconVariant;
@@ -26,19 +35,30 @@ function Icon({
   disabled = false,
   ...props
 }: IconProps) {
-  // Any icon literally named 'MapPinIcon' - static or from a dynamic
-  // name={someVariable} lookup - renders the real downloaded pin image
-  // instead of the generic outline icon. One place controls this site-wide.
-  if (name === 'MapPinIcon') {
+  // Icons that have a real downloaded PNG. Drawn as a CSS mask filled with
+  // `currentColor`, so they take whatever text color the caller sets
+  // (e.g. className="text-primary" = brand yellow). One place controls this site-wide.
+  const pngFile = CUSTOM_PNG[name];
+  if (pngFile) {
+    const url = `/assets/icons/${pngFile}`;
     return (
-      // eslint-disable-next-line @next/next/no-img-element -- small static UI icon, next/image is unnecessary overhead here
-      <img
-        src="/assets/icons/location-pin.png"
-        alt=""
-        width={size}
-        height={size}
-        className={`inline-block object-contain flex-shrink-0 ${disabled ? 'opacity-50' : ''} ${className}`}
-        style={{ width: size, height: size }}
+      <span
+        role="img"
+        aria-hidden="true"
+        className={`inline-block flex-shrink-0 ${disabled ? 'opacity-50' : ''} ${className}`}
+        style={{
+          width: size,
+          height: size,
+          backgroundColor: 'currentColor',
+          WebkitMaskImage: `url(${url})`,
+          maskImage: `url(${url})`,
+          WebkitMaskSize: 'contain',
+          maskSize: 'contain',
+          WebkitMaskRepeat: 'no-repeat',
+          maskRepeat: 'no-repeat',
+          WebkitMaskPosition: 'center',
+          maskPosition: 'center',
+        }}
         onClick={disabled ? undefined : onClick}
       />
     );

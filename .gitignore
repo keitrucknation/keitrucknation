@@ -1,6 +1,6 @@
 # Node modules
 node_modules/
-package-lock.json
+# package-lock.json is committed so Vercel installs the exact same versions
 
 # Next.js build output
 .next/
@@ -35,3 +35,8 @@ jest-test-results.json
 
 # Optional: if using TurboRepo or monorepo
 turbo/
+
+# Environment files (real keys) - never commit. .env.example is the template.
+.env
+.env.*
+!.env.example

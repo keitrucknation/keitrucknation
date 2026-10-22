@@ -1,15 +1,14 @@
-'use client';
-
-import React, { useState } from 'react';
+import React from 'react';
 
 /**
- * Maps a plain-word icon id to its real file, as a path relative to
- * /public/assets/ (not just a filename - these live in different folders).
- * Several ids intentionally point at the same file where the concept
- * overlaps (mini-truck -> truck-body.png, ocean/globe -> ocean-shipping.png).
+ * Maps a plain-word icon id to its file, relative to /public/assets/.
+ * Several ids intentionally share a file (ocean/globe/ship -> ocean-shipping.png).
+ *
+ * NOTE: every file here is a real .png. (The old "logo.svg" files were PNG images
+ * saved with a .svg extension, which browsers refuse to display.)
  */
 const ICON_FILE: Record<string, string> = {
-  // Generic UI icon set (black Flaticon downloads, meant to be recolored)
+  // Generic UI icons (black on transparent -> recolored yellow)
   factory: 'icons/factory.png',
   truck: 'icons/truck-body.png',
   ship: 'icons/ocean-shipping.png',
@@ -27,63 +26,63 @@ const ICON_FILE: Record<string, string> = {
   business: 'icons/business.png',
   document: 'icons/document.png',
   handshake: 'icons/handshake.png',
-  // Payment brand logos (real brand colors - never recolored)
-  bank: 'logos/payment/bank-transfer.svg',
-  visa: 'logos/payment/visa.svg',
-  mastercard: 'logos/payment/mastercard.svg',
-  cashapp: 'logos/payment/cashapp.svg',
-  zelle: 'logos/payment/zelle.svg',
-  chime: 'logos/payment/chime.svg',
-  applepay: 'logos/payment/apple-pay.svg',
-  bitcoin: 'logos/payment/bitcoin.svg',
-  // Manufacturer brand logos (real brand colors - never recolored)
-  suzuki: 'logos/manufacturers/suzuki.svg',
-  honda: 'logos/manufacturers/honda.svg',
-  daihatsu: 'logos/manufacturers/daihatsu.svg',
-  subaru: 'logos/manufacturers/subaru.svg',
-  mitsubishi: 'logos/manufacturers/mitsubishi.svg',
-  // Social brand logos (real brand colors - never recolored)
-  facebook: 'logos/social/facebook.svg',
-  instagram: 'logos/social/instagram.svg',
+  pin: 'icons/location-pin.png',
+  // Payment logos (kept in real brand colors when color="none")
+  bank: 'logos/payment/bank-transfer.png',
+  visa: 'logos/payment/visa.png',
+  mastercard: 'logos/payment/mastercard.png',
+  cashapp: 'logos/payment/cashapp.png',
+  zelle: 'logos/payment/zelle.png',
+  chime: 'logos/payment/chime.png',
+  applepay: 'logos/payment/apple-pay.png',
+  bitcoin: 'logos/payment/bitcoin.png',
+  // Manufacturer logos (kept in real brand colors when color="none")
+  suzuki: 'logos/manufacturers/suzuki.png',
+  honda: 'logos/manufacturers/honda.png',
+  daihatsu: 'logos/manufacturers/daihatsu.png',
+  subaru: 'logos/manufacturers/subaru.png',
+  mitsubishi: 'logos/manufacturers/mitsubishi.png',
+  // Social logos (always rendered in brand yellow)
+  facebook: 'logos/social/facebook.png',
+  instagram: 'logos/social/instagram.png',
+  tiktok: 'logos/social/tiktok.png',
+  youtube: 'logos/social/youtube.png',
 };
 
-/** Plain-text label shown only if a given id has no mapped file yet (or the file fails to load) */
+/** Social icons are always brand yellow, even if a caller passes color="none". */
+const ALWAYS_YELLOW = new Set(['facebook', 'instagram', 'tiktok', 'youtube']);
+
+/** Plain-text label shown only when an id has no mapped file */
 const FALLBACK_LABEL: Record<string, string> = {
   lightning: 'Fast',
   wheat: 'Farm',
 };
 
+const BRAND_YELLOW = '#E8FF3E';
+
 interface MappedIconProps {
-  /** Plain-word id, e.g. "factory", "truck", "gear" - looked up in ICON_FILE above */
+  /** Plain-word id, e.g. "factory", "truck", "facebook" */
   icon: string;
   size?: number;
   className?: string;
-  /** Recolor the icon to this solid color via CSS mask (default: brand yellow).
-   * Only works correctly on black-icon-on-transparent-background source files
-   * (standard Flaticon monochrome downloads). Pass color="none" to render the
-   * file's own original colors untouched (use this for real brand logos). */
+  /** Solid recolor (default: brand yellow). Pass color="none" to show the file's
+   * original colors (manufacturer / payment logos). */
   color?: string;
 }
 
 /**
- * Renders the real icon for a given icon id, recolored to a solid brand color
- * via CSS mask-image - this works regardless of the source file's own color
- * (black, dark grey, whatever Flaticon exported), since the mask only reads
- * the shape/alpha channel and fills it with `color`. Falls back to a short
- * plain-text label if no file mapping exists yet, or if the file hasn't
- * actually been saved to disk - detected via a hidden 1px probe image, since
- * a CSS mask has no onError of its own to hook into.
+ * Server-safe (no hooks, no 'use client' needed). Icons are drawn as a CSS mask
+ * filled with a solid color - one tiny request per icon, nothing extra to load.
  */
 export default function MappedIcon({
   icon,
   size = 20,
   className = '',
-  color = '#E8FF3E',
+  color = BRAND_YELLOW,
 }: MappedIconProps) {
   const file = ICON_FILE[icon];
-  const [failed, setFailed] = useState(false);
 
-  if (!file || failed) {
+  if (!file) {
     return (
       <span className={`text-[10px] font-bold uppercase tracking-wide ${className}`}>
         {FALLBACK_LABEL[icon] ?? icon}
@@ -91,50 +90,44 @@ export default function MappedIcon({
     );
   }
 
-  const src = `/assets/icons/${file}`;
+  const src = `/assets/${file}`;
 
-  if (color === 'none') {
+  if (color === 'none' && !ALWAYS_YELLOW.has(icon)) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element -- small static UI icon, next/image is unnecessary overhead here
+      // eslint-disable-next-line @next/next/no-img-element -- small static logo, next/image is unnecessary overhead
       <img
         src={src}
         alt=""
         width={size}
         height={size}
-        onError={() => setFailed(true)}
+        loading="lazy"
+        decoding="async"
         className={`inline-block object-contain flex-shrink-0 ${className}`}
         style={{ width: size, height: size }}
       />
     );
   }
 
+  const fill = color === 'none' ? BRAND_YELLOW : color;
+
   return (
-    <>
-      {/* Invisible - exists only to detect a missing file via onError, since a CSS mask can't fire one itself */}
-      <img
-        src={src}
-        alt=""
-        aria-hidden="true"
-        onError={() => setFailed(true)}
-        style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
-      />
-      <span
-        role="img"
-        className={`inline-block flex-shrink-0 ${className}`}
-        style={{
-          width: size,
-          height: size,
-          backgroundColor: color,
-          WebkitMaskImage: `url(${src})`,
-          maskImage: `url(${src})`,
-          WebkitMaskSize: 'contain',
-          maskSize: 'contain',
-          WebkitMaskRepeat: 'no-repeat',
-          maskRepeat: 'no-repeat',
-          WebkitMaskPosition: 'center',
-          maskPosition: 'center',
-        }}
-      />
-    </>
+    <span
+      role="img"
+      aria-hidden="true"
+      className={`inline-block flex-shrink-0 ${className}`}
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: fill,
+        WebkitMaskImage: `url(${src})`,
+        maskImage: `url(${src})`,
+        WebkitMaskSize: 'contain',
+        maskSize: 'contain',
+        WebkitMaskRepeat: 'no-repeat',
+        maskRepeat: 'no-repeat',
+        WebkitMaskPosition: 'center',
+        maskPosition: 'center',
+      }}
+    />
   );
 }

@@ -2,7 +2,8 @@ import { imageHosts } from './image-hosts.config.mjs';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  productionBrowserSourceMaps: true,
+  // Off so the live site doesn't publish readable source code.
+  productionBrowserSourceMaps: false,
   distDir: process.env.DIST_DIR || '.next',
 
   images: {

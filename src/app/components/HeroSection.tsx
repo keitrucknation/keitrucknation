@@ -109,7 +109,7 @@ const HeroSection: React.FC = () => {
               <span className="tag-pill bg-primary/10 text-primary border border-primary/20 inline-flex items-center gap-1.5">
                 {/* eslint-disable-next-line @next/next/no-img-element -- small static UI icon */}
                 <img
-                  src="/assets/flags/ja.png"
+                  src="/assets/flags/jp.png"
                   alt=""
                   className="w-4 h-3 object-cover rounded-[2px]"
                 />

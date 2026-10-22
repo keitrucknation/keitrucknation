@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import AppLogo from '@/components/ui/AppLogo';
-import Icon from '@/components/ui/AppIcon';
+// import Icon from '@/components/ui/AppIcon'; // not used at the moment
 import MappedIcon from '@/components/ui/MappedIcon';
 
 const Footer: React.FC = () => {

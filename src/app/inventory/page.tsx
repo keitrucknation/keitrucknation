@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -54,7 +54,10 @@ export default function InventoryPage() {
       />
       <main className="min-h-screen bg-background">
         <Header cartCount={0} />
-        <InventoryClient />
+        {/* Suspense is required because InventoryClient reads ?make= from the URL */}
+        <Suspense fallback={<div className="min-h-[60vh]" />}>
+          <InventoryClient />
+        </Suspense>
         <Footer />
       </main>
     </>

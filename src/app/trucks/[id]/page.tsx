@@ -22,7 +22,11 @@ function conditionLabel(truck: InventoryTruck): string {
 export default function TruckDetailPage() {
   const params = useParams();
   const id = typeof params?.id === 'string' ? params.id : '';
-  const truck = INVENTORY.find((t) => t.slug === id) ?? INVENTORY[0];
+  // Links across the site use either the truck's slug (e.g. "carry-flatbed-4wd")
+  // or its id (e.g. "fb-1"), so accept both.
+  const found = INVENTORY.find((t) => t.slug === id) ?? INVENTORY.find((t) => t.id === id);
+  // Hooks below need a truck object; the not-found screen is rendered after them.
+  const truck = found ?? INVENTORY[0];
   const { t: strings } = useLanguage();
 
   const [activeImg, setActiveImg] = useState(0);
@@ -82,7 +86,47 @@ export default function TruckDetailPage() {
   const monthlyPayment =
     loanAmount > 0 ? (loanAmount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -termMonths)) : 0;
 
-  const relatedTrucks = INVENTORY.filter((t) => t.id !== truck.id).slice(0, 2);
+  // Prefer trucks from the same category, then fill with others.
+  const relatedTrucks = [
+    ...INVENTORY.filter((t) => t.id !== truck.id && t.category === truck.category),
+    ...INVENTORY.filter((t) => t.id !== truck.id && t.category !== truck.category),
+  ].slice(0, 2);
+
+  if (!found) {
+    return (
+      <main className="min-h-screen bg-background">
+        <Header />
+        <div className="pt-28 sm:pt-32 pb-20 max-w-2xl mx-auto px-4 sm:px-6 text-center">
+          <div className="mx-auto mb-6 size-20 rounded-2xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center">
+            <Icon name="TruckIcon" size={40} className="text-primary" />
+          </div>
+          <h1 className="font-display font-bold text-3xl sm:text-4xl text-foreground mb-3">
+            We couldn&apos;t find that truck
+          </h1>
+          <p className="text-muted-foreground mb-8">
+            It may have been sold or the link is out of date. Browse what&apos;s available now, or
+            tell us what you&apos;re looking for and we&apos;ll source it.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/products"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform min-h-[48px]"
+            >
+              <Icon name="TruckIcon" size={16} />
+              Browse all trucks
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-border text-foreground font-black text-xs uppercase tracking-widest hover:border-primary hover:text-primary transition-colors min-h-[48px]"
+            >
+              Request a truck
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background">

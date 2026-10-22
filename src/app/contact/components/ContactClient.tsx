@@ -229,7 +229,11 @@ export default function ContactClient() {
                             : 'bg-card text-muted-foreground border-border hover:text-foreground hover:border-muted-foreground'
                         }`}
                       >
-                        <Icon name={type.icon as 'TruckIcon'} size={14} />
+                        <Icon
+                          name={type.icon as 'TruckIcon'}
+                          size={16}
+                          className={form.inquiryType === type.value ? '' : 'text-primary'}
+                        />
                         {type.label}
                       </button>
                     ))}

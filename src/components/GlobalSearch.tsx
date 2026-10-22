@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { createPortal } from 'react-dom';
 import Icon from '@/components/ui/AppIcon';
 import MappedIcon from '@/components/ui/MappedIcon';
 
@@ -83,21 +84,42 @@ const ALL_RESULTS: SearchResult[] = [
   {
     title: 'Are Kei Trucks Street Legal?',
     subtitle: 'Regulations · 8 min read',
-    href: '/blog',
+    href: '/blog/kei-trucks-street-legal-by-state',
     category: 'Blog',
     icon: 'notes',
   },
   {
     title: 'Suzuki Carry vs Daihatsu Hijet',
     subtitle: 'Buying Guide · 6 min read',
-    href: '/blog',
+    href: '/blog/suzuki-carry-vs-daihatsu-hijet',
     category: 'Blog',
     icon: 'notes',
   },
   {
     title: 'Kei Truck Farm Use Guide',
     subtitle: 'Use Cases · 10 min read',
-    href: '/blog',
+    href: '/blog/kei-truck-farm-use-guide',
+    category: 'Blog',
+    icon: 'notes',
+  },
+  {
+    title: 'How We Import Kei Trucks',
+    subtitle: 'Import Process · 7 min read',
+    href: '/blog/importing-kei-truck-process',
+    category: 'Blog',
+    icon: 'notes',
+  },
+  {
+    title: 'Kei Truck Maintenance: Year One',
+    subtitle: 'Maintenance · 9 min read',
+    href: '/blog/kei-truck-maintenance-basics',
+    category: 'Blog',
+    icon: 'notes',
+  },
+  {
+    title: 'Subaru Sambar EN07 Engine Guide',
+    subtitle: 'Technical · 11 min read',
+    href: '/blog/subaru-sambar-en07-engine-guide',
     category: 'Blog',
     icon: 'notes',
   },
@@ -201,6 +223,9 @@ export default function GlobalSearch({ scrolled }: GlobalSearchProps) {
     setTimeout(() => inputRef.current?.focus(), 50);
   }, []);
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const handleClose = useCallback(() => {
     setOpen(false);
     setQuery('');
@@ -221,16 +246,6 @@ export default function GlobalSearch({ scrolled }: GlobalSearchProps) {
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, [open, handleOpen, handleClose]);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        handleClose();
-      }
-    };
-    if (open) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open, handleClose]);
 
   return (
     <div ref={containerRef} className="relative">
@@ -264,9 +279,11 @@ export default function GlobalSearch({ scrolled }: GlobalSearchProps) {
         <Icon name="MagnifyingGlassIcon" size={16} />
       </button>
 
-      {/* Search Modal */}
-      {open && (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh] px-4">
+      {/* Search Modal - rendered in document.body via a portal. Inside the header, the
+          header's backdrop-blur traps `position: fixed` to the 80px header box, which is
+          what made the results get cut off behind the page. */}
+      {open && mounted && createPortal(
+        <div className="fixed inset-0 z-[200] flex items-start justify-center pt-[10vh] px-4">
           {/* Backdrop */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
 
@@ -354,8 +371,9 @@ export default function GlobalSearch({ scrolled }: GlobalSearchProps) {
               <span>ESC close</span>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
-}
+} 

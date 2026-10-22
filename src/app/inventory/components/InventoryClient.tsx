@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import AppImage from '@/components/ui/AppImage';
 import Icon from '@/components/ui/AppIcon';
 import MappedIcon from '@/components/ui/MappedIcon';
@@ -12,6 +13,20 @@ export default function InventoryClient() {
   const [activeMake, setActiveMake] = useState<string>('all');
   const [visible, setVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  const makeParam = searchParams?.get('make')?.toLowerCase() ?? null;
+
+  // "Browse by Manufacturer" tiles (and blog links) go to /inventory?make=<id>.
+  // Apply that filter and bring the results into view.
+  useEffect(() => {
+    if (!makeParam) return;
+    if (!MANUFACTURERS?.some((m) => m?.id === makeParam)) return;
+    setActiveMake(makeParam);
+    setVisible(true);
+    requestAnimationFrame(() =>
+      sectionRef?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    );
+  }, [makeParam]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -49,7 +64,7 @@ export default function InventoryClient() {
             <span className="tag-pill bg-primary/10 text-primary border border-primary/20 inline-flex items-center gap-1.5">
               {/* eslint-disable-next-line @next/next/no-img-element -- small static UI icon */}
               <img
-                src="/assets/flags/ja.png"
+                src="/assets/flags/jp.png"
                 alt=""
                 className="w-4 h-3 object-cover rounded-[2px]"
               />
@@ -119,10 +134,11 @@ export default function InventoryClient() {
                 }`}
               >
                 <span
-                  className="inline-block size-2 rounded-full mr-1.5"
-                  style={{ backgroundColor: m?.color }}
+                  className="inline-flex size-5 items-center justify-center rounded-full bg-white mr-1.5 align-middle"
                   aria-hidden="true"
-                />
+                >
+                  <MappedIcon icon={m?.id ?? ''} size={14} color="none" />
+                </span>
                 {m?.label?.split(' ')?.[1]}
               </button>
             ))}

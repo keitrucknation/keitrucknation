@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import AppImage from '@/components/ui/AppImage';
 import Icon from '@/components/ui/AppIcon';
+import { cartStore } from '@/lib/cartStore';
 import { TruckCategory, TRUCK_CATEGORIES } from '../data/categories';
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 export default function CategoryPageClient({ category }: Props) {
   const [activeDrivetrain, setActiveDrivetrain] = useState<string>('all');
   const [visible, setVisible] = useState(false);
+  const [addedId, setAddedId] = useState<string | null>(null);
   const trucksRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -25,6 +27,21 @@ export default function CategoryPageClient({ category }: Props) {
     if (trucksRef.current) observer.observe(trucksRef.current);
     return () => observer.disconnect();
   }, []);
+
+  const handleAddToCart = (truck: TruckCategory['trucks'][number]) => {
+    cartStore.addItem({
+      id: truck.id,
+      name: truck.name,
+      subtitle: `${truck.year} ${truck.make}`,
+      price: truck.price,
+      image: truck.image,
+      imageAlt: truck.imageAlt,
+      specs: truck.specs,
+      category: 'truck',
+    });
+    setAddedId(truck.id);
+    setTimeout(() => setAddedId((cur) => (cur === truck.id ? null : cur)), 2500);
+  };
 
   const filteredTrucks = category.trucks.filter(
     (t) =>
@@ -224,13 +241,24 @@ export default function CategoryPageClient({ category }: Props) {
                       >
                         Details
                       </Link>
-                      <Link
-                        href="/cart"
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest bg-primary text-primary-foreground hover:scale-105 transition-transform min-h-[44px]"
-                      >
-                        <Icon name="ShoppingCartIcon" size={14} />
-                        Add to Cart
-                      </Link>
+                      {addedId === truck.id ? (
+                        <Link
+                          href="/cart"
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest bg-primary text-primary-foreground min-h-[44px]"
+                        >
+                          <Icon name="CheckIcon" size={14} />
+                          Added - View Cart
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleAddToCart(truck)}
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest bg-primary text-primary-foreground hover:scale-105 transition-transform min-h-[44px]"
+                        >
+                          <Icon name="ShoppingCartIcon" size={14} />
+                          Add to Cart
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

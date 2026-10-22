@@ -7,7 +7,9 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import GlobalSearch from '@/components/GlobalSearch';
 import { LanguageToggle, useLanguage } from '@/components/LanguageSelector';
-import CurrencyToggle from '@/components/CurrencyToggle';
+// Currency toggle is hidden for now. To bring it back, restore this import and
+// put <CurrencyToggle scrolled={scrolled} /> next to the language toggle.
+// import CurrencyToggle from '@/components/CurrencyToggle';
 import { cartStore } from '@/lib/cartStore';
 import { wishlistStore } from '@/lib/wishlistStore';
 
@@ -51,14 +53,13 @@ const Header: React.FC<HeaderProps> = () => {
   }, []);
 
   const navLinks = [
-    { label: t.nav.inventory, href: '/inventory' },
     { label: t.nav.financing, href: '/financing' },
-    { label: t.nav.importProcess, href: '/import-process' },
-    { label: t.nav.maintenance, href: '/maintenance' },
-    { label: t.nav.blog, href: '/blog' },
-    { label: t.nav.configurator, href: '/configurator' },
     { label: t.nav.about, href: '/about' },
     { label: t.nav.contact, href: '/contact' },
+    { label: t.nav.blog, href: '/blog' },
+    { label: t.nav.inventory, href: '/inventory' },
+    { label: t.nav.maintenance, href: '/maintenance' },
+    { label: t.nav.configurator, href: '/configurator' },
   ];
 
   const navTextColor = scrolled ? 'text-white' : 'text-gray-400';
@@ -115,8 +116,7 @@ const Header: React.FC<HeaderProps> = () => {
             {/* Global Search */}
             <GlobalSearch scrolled={scrolled} />
 
-            {/* Currency Toggle */}
-            <CurrencyToggle scrolled={scrolled} />
+            
 
             {/* Language Toggle */}
             <LanguageToggle scrolled={scrolled} />
